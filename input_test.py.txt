@@ -1,0 +1,53 @@
+import RPi.GPIO as GPIO
+import time
+
+# Define GPIO pins for rows and columns of the matrix
+row_pins = [21, 20, 16, 12, 7, 8, 25, 24]  # Pins for rows
+col_pins = [23, 18, 15, 14, 6, 13, 19, 26]  # Pins for columns
+
+# Setup GPIO
+GPIO.setmode(GPIO.BCM)
+
+# Setup row pins as input and initialize them to low
+for pin in row_pins:
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+# Setup column pins as output and initialize them to low
+for pin in col_pins:
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, GPIO.LOW)
+
+# Function to read input from row pins
+def read_inputs():
+    inputs = []
+    for pin in row_pins:
+        inputs.append(GPIO.input(pin))
+    return inputs
+
+# Function to display the matrix
+def display_matrix(matrix):
+    for row in matrix:
+        print(' '.join(map(str, row)))
+
+# Main loop
+try:
+    while True:
+        # Initialize an empty matrix
+    matrix = [[0] * 8 for _ in range(8)]
+    
+    for col_pin in col_pins:
+        GPIO.output(col_pin, GPIO.HIGH)
+        time.sleep(0.01)  # Wait for stable input
+        inputs = read_inputs()
+        GPIO.output(col_pin, GPIO.LOW)
+        
+        for row_index, input_val in enumerate(inputs):
+            matrix[row_index][col_pins.index(col_pin)] = input_val
+    
+    # Display the matrix
+    display_matrix(matrix)
+    
+    time.sleep(0.1)  # Adjust delay as needed
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
